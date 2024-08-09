@@ -1,11 +1,11 @@
-# My Next.js App
+# ToDo App
 
 このプロジェクトは、Next.js を使用して作成されたアプリケーションです。
 
 ## プロジェクト構造
 
 ```
-my-nextjs-app
+todo-app
 ├── components
 │   ├── TaskForm.tsx
 │   └── TaskTable.tsx
