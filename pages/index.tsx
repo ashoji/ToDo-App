@@ -23,10 +23,20 @@ const theme = createTheme({
 
 const initialTasks: Task[] = [];
 
+/**
+ * Represents the Home component.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <Home />
+ * ```
+ */
 const Home: React.FC = () => {
   const { instance, inProgress, accounts } = useMsal();
   const [userName, setUserName] = useState<string | null>(null);
 
+  // サインインしている場合はユーザー名を取得
   useEffect(() => {
     if (accounts.length > 0) {
       const account = accounts[0];
@@ -41,6 +51,17 @@ const Home: React.FC = () => {
     }
   }, [accounts, instance]);
 
+
+  // サインインしていない場合はリダイレクトでログイン
+  useEffect(() => {
+    if (inProgress === InteractionStatus.None) {
+      instance.loginRedirect(loginRequest).catch(e => {
+        console.error(e);
+      });
+    }
+  }, [inProgress, instance]);
+
+  // タスクの状態を管理
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (typeof window !== 'undefined') {
       const savedTasks = localStorage.getItem('tasks');
@@ -49,7 +70,7 @@ const Home: React.FC = () => {
     return initialTasks;
   });
 
-
+  // ローカルストレージに保存されたタスクを取得
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedTasks = localStorage.getItem('tasks');
@@ -59,12 +80,14 @@ const Home: React.FC = () => {
     }
   }, []);
 
+  // タスクが変更された場合はローカルストレージに保存
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('tasks', JSON.stringify(tasks));
     }
   }, [tasks]);
 
+  // タスクを追加
   const addTask = async (name: string, deadline: string) => {
     const response = await fetch('/api/openai', {
       method: 'POST',
@@ -89,6 +112,7 @@ const Home: React.FC = () => {
     localStorage.setItem('tasks', JSON.stringify(updatedTasks));
   };
 
+  // タスクを削除
   const deleteTask = (id: string) => {
     const updatedTasks = tasks.filter(task => task.id !== id);
     setTasks(updatedTasks);
