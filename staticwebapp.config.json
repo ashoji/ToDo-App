@@ -1,0 +1,22 @@
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/*",
+      "allowedRoles": ["authenticated"]
+    }
+  ],
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/c348697f-afd7-4ba9-9118-4c15b2801d37/v2.0",
+          "clientIdSettingName": "e707ae9a-e8c6-4124-be35-f6ac92737146"
+        }
+      }
+    }
+  }
+}

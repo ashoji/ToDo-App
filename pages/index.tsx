@@ -1,7 +1,10 @@
 // pages/index.tsx
 import React, { useState, useEffect } from 'react';
+import { useMsal } from '@azure/msal-react';
+import { InteractionStatus } from "@azure/msal-browser";
+import { loginRequest } from '../utils/msalConfig';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Container } from '@mui/material';
+import { CssBaseline, Container, Typography } from '@mui/material';
 import TaskTable from '../components/TaskTable';
 import TaskForm from '../components/TaskForm';
 import Header from '../components/Header';
@@ -21,6 +24,23 @@ const theme = createTheme({
 const initialTasks: Task[] = [];
 
 const Home: React.FC = () => {
+  const { instance, inProgress, accounts } = useMsal();
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      const account = accounts[0];
+      instance.acquireTokenSilent({
+        ...loginRequest,
+        account: account
+      }).then(response => {
+        setUserName(response.account?.name || null);
+      }).catch(error => {
+        console.error("Failed to acquire token silently:", error);
+      });
+    }
+  }, [accounts, instance]);
+
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (typeof window !== 'undefined') {
       const savedTasks = localStorage.getItem('tasks');
@@ -84,11 +104,19 @@ const Home: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Header />
-      <Container>
-        <TaskForm onSubmit={addTask} />
-        <TaskTable tasks={tasks} deleteTask={deleteTask} toggleTaskCompletion={toggleTaskCompletion} />
-      </Container>
+      <Header userName={userName} />
+      {userName ? (
+        <Container>
+          <TaskForm onSubmit={addTask} />
+          <TaskTable tasks={tasks} deleteTask={deleteTask} toggleTaskCompletion={toggleTaskCompletion} />
+        </Container>
+      ) : (
+        <Container>
+          <Typography variant="h6" align="center" sx={{ marginTop: 4 }}>
+            サインインしてください。
+          </Typography>
+        </Container>
+      )}
       <Footer />
     </ThemeProvider>
   );
